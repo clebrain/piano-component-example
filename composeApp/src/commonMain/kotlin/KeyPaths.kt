@@ -1,9 +1,5 @@
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.vector.PathParser
-import kotlin.math.atan2
 
 fun whiteKeyCenterPath(
     width: Float = 90f,
