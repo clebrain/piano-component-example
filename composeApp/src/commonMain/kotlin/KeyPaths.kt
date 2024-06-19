@@ -1,5 +1,9 @@
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.vector.PathParser
+import kotlin.math.atan2
 
 fun whiteKeyCenterPath(
     width: Float = 90f,
@@ -9,24 +13,16 @@ fun whiteKeyCenterPath(
     leftCutWidth: Float? = null,
     rightCutWidth: Float? = null,
     cutHeight: Float = 300f,
-): Path = Path().apply {
-    moveTo(bottomRounded, height)
-    arcTo(Rect(-bottomRounded, -bottomRounded, bottomRounded, bottomRounded), 0f, 90f, true)
-    if (leftCutWidth != null) {
-        lineTo(bottomRounded, cutHeight)
-        lineTo(leftCutWidth - middleRounded, cutHeight)
-        arcTo(Rect(middleRounded, -middleRounded, middleRounded, middleRounded), 0f, 90f, false)
-    }
-    lineTo(if(leftCutWidth != null) leftCutWidth - middleRounded else bottomRounded, 0f)
-    if (rightCutWidth != null) {
-        lineTo(width - rightCutWidth, 0f)
-        lineTo(width - rightCutWidth, cutHeight - middleRounded)
-        arcTo(Rect(middleRounded, middleRounded, middleRounded, middleRounded), 0f, 90f, false)
-    }
-    lineTo(width, if(rightCutWidth != null) cutHeight - middleRounded else 0f)
-    lineTo(width, height - bottomRounded)
-    arcTo(Rect(-bottomRounded, bottomRounded, bottomRounded, bottomRounded), 0f, 90f, true)
-    close()
+): Path {
+    val parser = PathParser()
+    parser.parsePathString(
+        "M $bottomRounded $height a $bottomRounded $bottomRounded 0 0 1 -${bottomRounded} -${bottomRounded} ${
+            if (leftCutWidth != null) {
+                "V $cutHeight H ${leftCutWidth - middleRounded} a $middleRounded $middleRounded 0 0 0 $middleRounded -${middleRounded}"
+            } else ""
+        } V 0 ${if (rightCutWidth != null) "H ${width - rightCutWidth} V ${cutHeight - middleRounded} a $middleRounded $middleRounded 0 0 0 $middleRounded $middleRounded" else ""} H $width V ${height - bottomRounded} a $bottomRounded $bottomRounded 0 0 1 -${bottomRounded} $bottomRounded Z"
+    )
+    return parser.toPath()
 }
 
 
@@ -37,13 +33,12 @@ fun whiteKeyLeftEdgePath(
     height: Float = 450f,
     r: Float = 3f,
     bottomRounded: Float = r,
-): Path = Path().apply {
-    moveTo(bottomRounded, height)
-    arcTo(Rect(-bottomRounded, -bottomRounded, bottomRounded, bottomRounded), 0f, 90f, true)
-    lineTo(bottomRounded, cutHeight)
-    lineTo(edgeWidth, cutHeight)
-    lineTo(edgeWidth, height)
-    close()
+): Path {
+    val parser = PathParser()
+    parser.parsePathString(
+        "M $bottomRounded $height a $bottomRounded $bottomRounded 0 0 1 -${bottomRounded} -${bottomRounded} V $cutHeight H $edgeWidth V $height Z"
+    )
+    return parser.toPath()
 }
 
 fun whiteKeyRightEdgePath(
@@ -54,11 +49,10 @@ fun whiteKeyRightEdgePath(
     height: Float = 450f,
     r: Float = 3f,
     bottomRounded: Float = r,
-): Path = Path().apply {
-    moveTo(width - edgeWidth, height)
-    lineTo(width - edgeWidth, cutHeight)
-    relativeLineTo(edgeWidth, 0f)
-    lineTo(edgeWidth, height - bottomRounded)
-    arcTo(Rect(-bottomRounded, bottomRounded, bottomRounded, bottomRounded), 0f, 90f, true)
-    close()
+): Path {
+    val parser = PathParser()
+    parser.parsePathString(
+        "M ${width - edgeWidth} $height V $cutHeight h $edgeWidth V ${height - bottomRounded} a $bottomRounded $bottomRounded 0 0 1 -${bottomRounded} $bottomRounded Z"
+    )
+    return parser.toPath()
 }

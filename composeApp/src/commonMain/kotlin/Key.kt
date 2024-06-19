@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import util.RoundOption
 import util.isDiatonic
 import util.midiKeyToDiatonicNumber
+import kotlin.math.floor
 
 
 val DEFAULT_HINT_COLOR = Color(0xFFffce00)
@@ -93,6 +94,23 @@ val blackUnpressedBasePath: Path = Path().apply {
     close()
 }
 
+val pitchClassOffsets = listOf(
+    0, // C
+    55, // C#
+    93, // D
+    165, // D#
+    186, // E
+    279, // F
+    330, // F#
+    372, // G
+    436, // G#
+    465, // A
+    542, // A#
+    558, // B
+)
+
+val octaveWidth = 651;
+
 fun DrawScope.drawUnpressedBlackKey() {
     drawPath(
         blackUnpressedBasePath,
@@ -122,6 +140,12 @@ fun DrawScope.drawUnpressedBlackKey() {
         },
         brush = blackUnpressedTop()
     )
+}
+
+fun getKeyPosition(key: KeyInfo): Double {
+    val pitchClass = key.midiKey % 12;
+    val octave = floor(key.midiKey / 12.0) - 1;
+    return octaveWidth * octave + pitchClassOffsets[pitchClass];
 }
 
 fun DrawScope.Keys(

@@ -10,6 +10,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -46,7 +47,7 @@ fun Piano(
     keypressList: List<Boolean>,
 ) {
     val length = range.second - range.first
-    val keys : List<KeyInfo> = if(keypressList.size != 128) {
+    val keys: List<KeyInfo> = if (keypressList.size != 128) {
         List(length) {
             KeyInfo(midiKey = it + range.first, false)
         }
@@ -55,15 +56,21 @@ fun Piano(
             KeyInfo(midiKey = it + range.first, keypressList[it + range.first])
         }
     }
+    val basis = getKeyPosition(keys[0]);
+
     Canvas(Modifier.fillMaxSize()) {
         keys.forEachIndexed { idx, keyInfo ->
-            Keys(
-                midiKey = keyInfo.midiKey,
-                isPressed = keyInfo.pressed,
-                isLeftEnd = idx == 0,
-                isRightEnd = idx == keys.size,
-                isHint = false
-            )
+            withTransform({
+                translate(left = getKeyPosition(keyInfo).toFloat() - basis.toFloat())
+            }) {
+                Keys(
+                    midiKey = keyInfo.midiKey,
+                    isPressed = keyInfo.pressed,
+                    isLeftEnd = idx == 0,
+                    isRightEnd = idx == keys.size,
+                    isHint = false
+                )
+            }
         }
     }
 }
