@@ -1,19 +1,12 @@
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.drawscope.withTransform
 import util.RoundOption
 import util.isDiatonic
 import util.midiKeyToDiatonicNumber
 import kotlin.math.floor
 
-
-val DEFAULT_HINT_COLOR = Color(0xFFffce00)
 
 val centerPositions = listOf(
     27.5, // C
@@ -42,18 +35,18 @@ val whiteKeyInfo = listOf(
 )
 
 
-fun DrawScope.drawPressedBlackKey() {
+fun DrawScope.drawPressedBlackKey(realHeight: Float) {
     drawPath(
-        blackPressedBasePath,
+        blackPressedBasePath(realHeight),
         brush = blackPressedBase()
     )
-    clipPath(blackPressedBasePath) {
+    clipPath(blackPressedBasePath(realHeight)) {
         drawPath(
             Path().apply {
-                moveTo(5f, 290f)
-                lineTo(9f, 273f)
-                lineTo(46f, 273f)
-                lineTo(50f, 290f)
+                moveTo(5f, realHeight - 10f)
+                lineTo(9f, realHeight - 27f)
+                lineTo(46f, realHeight - 27f)
+                lineTo(50f, realHeight - 10f)
                 close()
             },
             brush = blackPressedBottom()
@@ -61,11 +54,11 @@ fun DrawScope.drawPressedBlackKey() {
     }
     drawPath(
         Path().apply {
-            moveTo(14f, 276f)
+            moveTo(14f, realHeight - 24f)
             relativeCubicTo(-3f, 0f, -5f, -1f, -5f, -3f)
-            relativeLineTo(0f, -273f)
+            relativeLineTo(0f, 17f - realHeight)
             relativeLineTo(37f, 0f)
-            relativeLineTo(0f, 273f)
+            relativeLineTo(0f, realHeight - 17f)
             relativeCubicTo(0f, 2f, -2f, 3f, -5f, 3f)
             close()
         },
@@ -74,22 +67,22 @@ fun DrawScope.drawPressedBlackKey() {
 
 }
 
-val blackPressedBasePath: Path = Path().apply {
-    moveTo(10f, 290f)
+fun blackPressedBasePath(realHeight: Float): Path = Path().apply {
+    moveTo(10f, realHeight - 10f)
     relativeCubicTo(-3f, 0f, -5f, -1f, -5f, -4f)
     lineTo(10f, 0f)
     lineTo(50f, 0f)
-    lineTo(50f, 286f)
+    lineTo(50f, realHeight - 14f)
     relativeCubicTo(0f, 3f, -2f, 4f, -5f, 4f)
     close()
 }
 
-val blackUnpressedBasePath: Path = Path().apply {
-    moveTo(10f, 295f)
+fun blackUnpressedBasePath(realHeight: Float): Path = Path().apply {
+    moveTo(10f, realHeight - 5f)
     relativeCubicTo(-3f, 0f, -5f, -1f, -5f, -4f)
     lineTo(10f, 0f)
     lineTo(50f, 0f)
-    lineTo(50f, 291f)
+    lineTo(50f, realHeight - 9f)
     relativeCubicTo(0f, 3f, -2f, 4f, -5f, 4f)
     close()
 }
@@ -111,18 +104,18 @@ val pitchClassOffsets = listOf(
 
 val octaveWidth = 651;
 
-fun DrawScope.drawUnpressedBlackKey() {
+fun DrawScope.drawUnpressedBlackKey(realHeight: Float) {
     drawPath(
-        blackUnpressedBasePath,
+        blackUnpressedBasePath(realHeight),
         brush = blackUnpressedBase()
     )
-    clipPath(blackUnpressedBasePath) {
+    clipPath(blackUnpressedBasePath(realHeight)) {
         drawPath(
             Path().apply {
-                moveTo(5f, 295f)
-                lineTo(8f, 265f)
-                lineTo(47f, 265f)
-                lineTo(50f, 295f)
+                moveTo(5f, realHeight - 5f)
+                lineTo(8f, realHeight - 35f)
+                lineTo(47f, realHeight - 35f)
+                lineTo(50f,  realHeight - 5f)
                 close()
             },
             brush = blackUnpressedBottom()
@@ -130,11 +123,11 @@ fun DrawScope.drawUnpressedBlackKey() {
     }
     drawPath(
         Path().apply {
-            moveTo(13f, 268f)
+            moveTo(13f, realHeight - 32f) // 268
             relativeCubicTo(-3f, 0f, -5f, -1f, -5f, -3f)
-            relativeLineTo(0f, -265f)
+            relativeLineTo(0f, 3f - realHeight)
             relativeLineTo(39f, 0f)
-            relativeLineTo(0f, 265f)
+            relativeLineTo(0f, realHeight - 3f)
             relativeCubicTo(0f, 2f, -2f, 3f, -5f, 3f)
             close()
         },
@@ -148,28 +141,27 @@ fun getKeyPosition(key: KeyInfo): Double {
     return octaveWidth * octave + pitchClassOffsets[pitchClass];
 }
 
-fun DrawScope.Keys(
+fun DrawScope.drawKey(
     midiKey: Int,
+    maxHeight: Float,
     isPressed: Boolean,
-    isHint: Boolean,
     isLeftEnd: Boolean,
     isRightEnd: Boolean,
-    hintColor: Color = DEFAULT_HINT_COLOR,
 ) {
+    val diatoicClass = midiKeyToDiatonicNumber(midiKey, RoundOption.Floor) % 7
+    val (leftCutWidth, rightCutWidth) = whiteKeyInfo[diatoicClass.toInt()]
+    val realHeight = if (isPressed) maxHeight else maxHeight - 8;
+    val cutHeight = (if (isPressed) maxHeight * 0.7 else maxHeight * 0.7 - 8).toFloat();
+    val centerPath = whiteKeyCenterPath(
+        width = 90f,
+        height = realHeight,
+        middleRounded = 3f,
+        bottomRounded = 3f,
+        leftCutWidth = if (isLeftEnd) 0f else leftCutWidth,
+        rightCutWidth = if (isRightEnd) 0f else rightCutWidth,
+        cutHeight
+    )
     if (isDiatonic(midiKey)) {
-        val diatoicClass = midiKeyToDiatonicNumber(midiKey, RoundOption.Floor) % 7
-        val (leftCutWidth, rightCutWidth) = whiteKeyInfo[diatoicClass.toInt()]
-        val realHeight = if (isPressed) 458f else 450f;
-        val cutHeight = if (isPressed) 308f else 300f;
-        val centerPath = whiteKeyCenterPath(
-            width = 90f,
-            height = realHeight,
-            middleRounded = 3f,
-            bottomRounded = 3f,
-            leftCutWidth = if (isLeftEnd) 0f else leftCutWidth,
-            rightCutWidth = if (isRightEnd) 0f else rightCutWidth,
-            cutHeight
-        )
 
         drawPath(
             centerPath,
@@ -189,41 +181,12 @@ fun DrawScope.Keys(
                 bottomRounded = 3f
             ), color = Color(0xfffafafa)
         )
-        if (isHint) {
-            drawPath(
-                centerPath,
-                color = hintColor.copy(alpha = 0.7f),
-            )
-        }
     } else {
         if (isPressed) {
-            drawPressedBlackKey()
+            drawPressedBlackKey(cutHeight)
         } else {
-            drawUnpressedBlackKey()
+            drawUnpressedBlackKey(cutHeight)
         }
-        if (isHint) {
-            drawPath(
-                if (isPressed) Path().apply {
-                    moveTo(44.638f, 289.253f)
-                    lineTo(10.362f, 289.253f)
-                    relativeCubicTo(-3.047f, 0f, -4.891f, -.879f, -4.891f, -2.841f)
-                    lineTo(4.83f, 0f)
-                    relativeLineTo(45.34f, 0f)
-                    lineTo(48.84f, 285.682f)
-                    relativeCubicTo(0f, 1.962f, -1.112f, 3.571f, -4.159f, 3.571f)
-                    close()
-                } else Path().apply {
-                    moveTo(44.638f, 294.858f)
-                    lineTo(10.362f, 294.858f)
-                    relativeCubicTo(-3.047f, 0f, -5.532f, -1.64f, -5.532f, -3.64f)
-                    lineTo(10.362f, 0f)
-                    relativeLineTo(45.34f, 0f)
-                    relativeLineTo(0f, 291.218f)
-                    relativeCubicTo(0f, 2f, -2.485f, 3.65f, -5.532f, 3.64f)
-                    close()
-                },
-                color = hintColor.copy(alpha = 0.7f),
-            )
-        }
+
     }
 }
