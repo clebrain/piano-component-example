@@ -42,39 +42,34 @@ val whiteKeyInfo = listOf(
 
 
 fun DrawScope.drawPressedBlackKey() {
-    withTransform({
-        this.scale(2f, 2f)
-        this.translate(250f, 500f)
-    }) {
-        drawPath(
-            blackPressedBasePath,
-            brush = blackPressedBase()
-        )
-        clipPath(blackPressedBasePath) {
-            drawPath(
-                Path().apply {
-                    moveTo(5f, 290f)
-                    lineTo(9f, 273f)
-                    lineTo(46f, 273f)
-                    lineTo(50f, 290f)
-                    close()
-                },
-                brush = blackPressedBottom()
-            )
-        }
+    drawPath(
+        blackPressedBasePath,
+        brush = blackPressedBase()
+    )
+    clipPath(blackPressedBasePath) {
         drawPath(
             Path().apply {
-                moveTo(14f, 276f)
-                relativeCubicTo(-3f, 0f, -5f, -1f, -5f, -3f)
-                relativeLineTo(0f, -273f)
-                relativeLineTo(37f, 0f)
-                relativeLineTo(0f, 273f)
-                relativeCubicTo(0f, 2f, -2f, 3f, -5f, 3f)
+                moveTo(5f, 290f)
+                lineTo(9f, 273f)
+                lineTo(46f, 273f)
+                lineTo(50f, 290f)
                 close()
             },
-            brush = blackPressedTop()
+            brush = blackPressedBottom()
         )
     }
+    drawPath(
+        Path().apply {
+            moveTo(14f, 276f)
+            relativeCubicTo(-3f, 0f, -5f, -1f, -5f, -3f)
+            relativeLineTo(0f, -273f)
+            relativeLineTo(37f, 0f)
+            relativeLineTo(0f, 273f)
+            relativeCubicTo(0f, 2f, -2f, 3f, -5f, 3f)
+            close()
+        },
+        brush = blackPressedTop()
+    )
 
 }
 
@@ -99,52 +94,44 @@ val blackUnpressedBasePath: Path = Path().apply {
 }
 
 fun DrawScope.drawUnpressedBlackKey() {
-    withTransform({
-        this.scale(2f, 2f)
-        this.translate(500f, 500f)
-    }) {
-        drawPath(
-            blackUnpressedBasePath,
-            brush = blackUnpressedBase()
-        )
-        clipPath(blackUnpressedBasePath) {
-            drawPath(
-                Path().apply {
-                    moveTo(5f, 295f)
-                    lineTo(8f, 265f)
-                    lineTo(47f, 265f)
-                    lineTo(50f, 295f)
-                    close()
-                },
-                brush = blackUnpressedBottom()
-            )
-        }
+    drawPath(
+        blackUnpressedBasePath,
+        brush = blackUnpressedBase()
+    )
+    clipPath(blackUnpressedBasePath) {
         drawPath(
             Path().apply {
-                moveTo(13f, 268f)
-                relativeCubicTo(-3f, 0f, -5f, -1f, -5f, -3f)
-                relativeLineTo(0f, -265f)
-                relativeLineTo(39f, 0f)
-                relativeLineTo(0f, 265f)
-                relativeCubicTo(0f, 2f, -2f, 3f, -5f, 3f)
+                moveTo(5f, 295f)
+                lineTo(8f, 265f)
+                lineTo(47f, 265f)
+                lineTo(50f, 295f)
                 close()
             },
-            brush = blackUnpressedTop()
+            brush = blackUnpressedBottom()
         )
     }
+    drawPath(
+        Path().apply {
+            moveTo(13f, 268f)
+            relativeCubicTo(-3f, 0f, -5f, -1f, -5f, -3f)
+            relativeLineTo(0f, -265f)
+            relativeLineTo(39f, 0f)
+            relativeLineTo(0f, 265f)
+            relativeCubicTo(0f, 2f, -2f, 3f, -5f, 3f)
+            close()
+        },
+        brush = blackUnpressedTop()
+    )
 }
 
-@Composable
 fun DrawScope.Keys(
     midiKey: Int,
     isPressed: Boolean,
     isHint: Boolean,
     isLeftEnd: Boolean,
     isRightEnd: Boolean,
-    translate: String,
     hintColor: Color = DEFAULT_HINT_COLOR,
 ) {
-    val centerPosition = centerPositions[midiKey % 12]
     if (isDiatonic(midiKey)) {
         val diatoicClass = midiKeyToDiatonicNumber(midiKey, RoundOption.Floor) % 7
         val (leftCutWidth, rightCutWidth) = whiteKeyInfo[diatoicClass.toInt()]
@@ -172,7 +159,7 @@ fun DrawScope.Keys(
             ), color = Color(0xfffafafa)
         )
         drawPath(
-            whiteKeyLeftEdgePath(
+            whiteKeyRightEdgePath(
                 height = realHeight,
                 cutHeight = if (!isRightEnd) cutHeight else 0f,
                 bottomRounded = 3f

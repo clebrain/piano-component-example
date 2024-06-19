@@ -10,23 +10,24 @@ fun whiteKeyCenterPath(
     rightCutWidth: Float? = null,
     cutHeight: Float = 300f,
 ): Path = Path().apply {
-        moveTo(bottomRounded, height)
-        // todo: add arcTo
-        if (leftCutWidth != null) {
-            lineTo(bottomRounded, cutHeight)
-            lineTo(leftCutWidth - middleRounded, cutHeight)
-            // todo: add arcTo
-        }
-        if (rightCutWidth != null) {
-            lineTo(width - rightCutWidth, cutHeight)
-            lineTo(width - rightCutWidth, cutHeight - middleRounded)
-            // todo: add arcTo
-        }
-        lineTo(width, cutHeight - middleRounded)
-        lineTo(width, height - bottomRounded)
-        // todo: add arcTo
-        close()
+    moveTo(bottomRounded, height)
+    arcTo(Rect(-bottomRounded, -bottomRounded, bottomRounded, bottomRounded), 0f, 90f, true)
+    if (leftCutWidth != null) {
+        lineTo(bottomRounded, cutHeight)
+        lineTo(leftCutWidth - middleRounded, cutHeight)
+        arcTo(Rect(middleRounded, -middleRounded, middleRounded, middleRounded), 0f, 90f, false)
     }
+    lineTo(if(leftCutWidth != null) leftCutWidth - middleRounded else bottomRounded, 0f)
+    if (rightCutWidth != null) {
+        lineTo(width - rightCutWidth, 0f)
+        lineTo(width - rightCutWidth, cutHeight - middleRounded)
+        arcTo(Rect(middleRounded, middleRounded, middleRounded, middleRounded), 0f, 90f, false)
+    }
+    lineTo(width, if(rightCutWidth != null) cutHeight - middleRounded else 0f)
+    lineTo(width, height - bottomRounded)
+    arcTo(Rect(-bottomRounded, bottomRounded, bottomRounded, bottomRounded), 0f, 90f, true)
+    close()
+}
 
 
 fun whiteKeyLeftEdgePath(
@@ -38,12 +39,13 @@ fun whiteKeyLeftEdgePath(
     bottomRounded: Float = r,
 ): Path = Path().apply {
     moveTo(bottomRounded, height)
-    // todo: add arcTo
+    arcTo(Rect(-bottomRounded, -bottomRounded, bottomRounded, bottomRounded), 0f, 90f, true)
     lineTo(bottomRounded, cutHeight)
     lineTo(edgeWidth, cutHeight)
     lineTo(edgeWidth, height)
     close()
 }
+
 fun whiteKeyRightEdgePath(
     c: Float = 300f,
     cutHeight: Float = c,
@@ -55,8 +57,8 @@ fun whiteKeyRightEdgePath(
 ): Path = Path().apply {
     moveTo(width - edgeWidth, height)
     lineTo(width - edgeWidth, cutHeight)
-    lineTo(edgeWidth, cutHeight)
-    lineTo(edgeWidth,  height - bottomRounded)
-    // todo: add arcTo
+    relativeLineTo(edgeWidth, 0f)
+    lineTo(edgeWidth, height - bottomRounded)
+    arcTo(Rect(-bottomRounded, bottomRounded, bottomRounded, bottomRounded), 0f, 90f, true)
     close()
 }
