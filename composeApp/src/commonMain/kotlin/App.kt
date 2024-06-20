@@ -1,8 +1,7 @@
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -10,22 +9,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import util.RoundOption
 import util.isDiatonic
-import util.midiKeyToDiatonicNumber
 
 @Composable
 @Preview
@@ -53,6 +54,25 @@ data class KeyInfo(
     var pressed: MutableState<Boolean>
 )
 
+suspend fun PointerInputScope.detectPressGestures(
+    onPressStart: ((Offset) -> Unit)? = null,
+    onPressEnd: (() -> Unit)? = null,
+) = coroutineScope {
+    awaitEachGesture {
+        val firstDown = awaitFirstDown()
+        firstDown.consume()
+        onPressStart?.invoke(firstDown.position)
+
+        // TapGestureDetector - AwaitPointerEventScope.consumeUntilUp()
+        do {
+            val event = awaitPointerEvent()
+            event.changes.forEach { changeEvent: PointerInputChange -> changeEvent.consume() }
+        } while (event.changes.any { it.pressed })
+
+        onPressEnd?.invoke()
+    }
+}
+
 @Composable
 fun Piano(
     range: IntRange,
@@ -79,8 +99,9 @@ fun Piano(
 
     BoxWithConstraints(Modifier.height(450.dp).background(Color.Black)) {
         Canvas(Modifier.fillMaxSize().pointerInput(Unit) {
-            detectTapGestures(
-                onPress = { offset ->
+            detectTapGestures { }
+            detectPressGestures(
+                onPressStart = { offset ->
                     keys.forEachIndexed { _, keyInfo ->
                         val diatonic = isDiatonic(keyInfo.midiKey)
                         val keyOffset = getKeyPosition(keyInfo).toFloat() - basis.toFloat()
@@ -93,8 +114,13 @@ fun Piano(
                         )
                         if (detectKeyArea.contains(offset)) {
                             keyInfo.pressed.value = !keyInfo.pressed.value
-                            return@detectTapGestures
+                            return@detectPressGestures
                         }
+                    }
+                },
+                onPressEnd = {
+                    keys.forEachIndexed { _, keyInfo ->
+                        keyInfo.pressed.value = false
                     }
                 }
             )
