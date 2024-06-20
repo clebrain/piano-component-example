@@ -1,4 +1,5 @@
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -13,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerInputChange
@@ -38,7 +40,7 @@ fun App() {
 //        }
         Column(Modifier.fillMaxWidth()) {
             Piano(
-                range = Pair(21, 108),
+                range = 21 until 108,
                 BooleanArray(88).toMutableList()
             )
         }
@@ -53,10 +55,10 @@ data class KeyInfo(
 
 @Composable
 fun Piano(
-    range: Pair<Int, Int>,
+    range: IntRange,
     keyPressedList: List<Boolean>,
 ) {
-    val length = range.second - range.first
+    val length = range.last
     val keys by remember {
         mutableStateOf(
             if (keyPressedList.size != 128) {
@@ -75,33 +77,24 @@ fun Piano(
     }
     val basis = getKeyPosition(keys.first());
 
-    BoxWithConstraints(Modifier.height(450.dp)) {
+    BoxWithConstraints(Modifier.height(450.dp).background(Color.Black)) {
         Canvas(Modifier.fillMaxSize().pointerInput(Unit) {
             detectTapGestures(
                 onPress = { offset ->
-                    keys.forEachIndexed { idx, keyInfo ->
-                        val keyPosition = pitchClassOffsets[keyInfo.midiKey % 12]
-                        val diatonicClass =
-                            midiKeyToDiatonicNumber(keyInfo.midiKey, RoundOption.Floor) % 7
-                        val (leftCutWidth, _) = whiteKeyInfo[diatonicClass.toInt()]
+                    keys.forEachIndexed { _, keyInfo ->
                         val diatonic = isDiatonic(keyInfo.midiKey)
+                        val keyOffset = getKeyPosition(keyInfo).toFloat() - basis.toFloat()
                         val detectKeyArea = Rect(
-                            Offset(keyPosition.toFloat() - leftCutWidth, 0f),
+                            Offset(keyOffset, 0f),
                             Offset(
-                                keyPosition.toFloat() - leftCutWidth + 90f,
+                                keyOffset + 90f,
                                 if (diatonic) maxHeight.value else maxHeight.value * 0.7f
                             )
                         )
-                        if (tryAwaitRelease()) {
-                            if (detectKeyArea.contains(offset)) {
-                                keyInfo.pressed.value = !keyInfo.pressed.value
-                                println("key $detectKeyArea / $offset / $keyInfo")
-                                return@detectTapGestures
-                            }
-                        } else {
-                            keyInfo.pressed.value = false
+                        if (detectKeyArea.contains(offset)) {
+                            keyInfo.pressed.value = !keyInfo.pressed.value
+                            return@detectTapGestures
                         }
-
                     }
                 }
             )
