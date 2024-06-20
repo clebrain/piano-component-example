@@ -148,8 +148,8 @@ fun DrawScope.drawKey(
     isLeftEnd: Boolean,
     isRightEnd: Boolean,
 ) {
-    val diatoicClass = midiKeyToDiatonicNumber(midiKey, RoundOption.Floor) % 7
-    val (leftCutWidth, rightCutWidth) = whiteKeyInfo[diatoicClass.toInt()]
+    val diatonicClass = midiKeyToDiatonicNumber(midiKey, RoundOption.Floor) % 7
+    val (leftCutWidth, rightCutWidth) = whiteKeyInfo[diatonicClass.toInt()]
     val realHeight = if (isPressed) maxHeight else maxHeight - 8;
     val cutHeight = (if (isPressed) maxHeight * 0.7 else maxHeight * 0.7 - 8).toFloat();
     val centerPath = whiteKeyCenterPath(
@@ -162,7 +162,6 @@ fun DrawScope.drawKey(
         cutHeight
     )
     if (isDiatonic(midiKey)) {
-
         drawPath(
             centerPath,
             brush = if (isPressed) whiteCenterPressed() else whiteCenterUnpressed()
@@ -172,7 +171,7 @@ fun DrawScope.drawKey(
                 height = realHeight,
                 cutHeight = if (!isLeftEnd) cutHeight else 0f,
                 bottomRounded = 3f
-            ), color = Color(0xfffafafa)
+            ), color = Color(0xffe9e9e9)
         )
         drawPath(
             whiteKeyRightEdgePath(
