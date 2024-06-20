@@ -1,10 +1,21 @@
+package piano.key
+
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipPath
-import util.RoundOption
-import util.isDiatonic
-import util.midiKeyToDiatonicNumber
+import piano.KeyInfo
+import piano.util.blackPressedBase
+import piano.util.blackPressedBottom
+import piano.util.blackPressedTop
+import piano.util.blackUnpressedBase
+import piano.util.blackUnpressedBottom
+import piano.util.blackUnpressedTop
+import piano.util.RoundOption
+import piano.util.isDiatonic
+import piano.util.midiKeyToDiatonicNumber
+import piano.util.whiteCenterPressed
+import piano.util.whiteCenterUnpressed
 import kotlin.math.floor
 
 

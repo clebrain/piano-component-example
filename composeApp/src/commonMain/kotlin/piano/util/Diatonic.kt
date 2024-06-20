@@ -1,6 +1,6 @@
-package util
+package piano.util
 
-import models.octave
+import piano.models.octave
 import kotlin.math.floor
 
 fun isDiatonic(midiKey: Int): Boolean {

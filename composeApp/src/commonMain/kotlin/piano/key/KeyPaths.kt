@@ -1,3 +1,5 @@
+package piano.key
+
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.PathParser
 

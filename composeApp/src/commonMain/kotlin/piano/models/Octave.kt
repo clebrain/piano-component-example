@@ -1,4 +1,4 @@
-package models
+package piano.models
 
 val octave = listOf(
     "C",
