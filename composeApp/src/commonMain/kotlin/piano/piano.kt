@@ -5,7 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -20,6 +22,7 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.coroutineScope
 import piano.key.drawKey
@@ -51,6 +54,7 @@ suspend fun PointerInputScope.detectPressGestures(
 
 @Composable
 fun Piano(
+    modifier: Modifier = Modifier,
     range: IntRange,
     keyPressedList: List<Boolean>,
 ) {
@@ -73,7 +77,9 @@ fun Piano(
     }
     val basis = getKeyPosition(keys.first());
 
-    BoxWithConstraints(Modifier.height(450.dp).background(Color.Black)) {
+    BoxWithConstraints(modifier.aspectRatio(1920.0f / 234.0f)) {
+        val density = LocalDensity.current
+        val height = with(density) { maxHeight.toPx() }
         Canvas(Modifier.fillMaxSize().pointerInput(Unit) {
             detectPressGestures(
                 onPressStart = { offset ->
@@ -84,7 +90,7 @@ fun Piano(
                             Offset(keyOffset, 0f),
                             Offset(
                                 keyOffset + 90f,
-                                if (diatonic) maxHeight.value else maxHeight.value * 0.7f
+                                if (diatonic) height else height * 0.7f
                             )
                         )
                         if (detectKeyArea.contains(offset)) {
@@ -106,10 +112,10 @@ fun Piano(
                 }) {
                     drawKey(
                         midiKey = keyInfo.midiKey,
+                        maxHeight = height,
                         isPressed = keyInfo.pressed.value,
                         isLeftEnd = idx == 0,
                         isRightEnd = idx == keys.size - 1,
-                        maxHeight = maxHeight.value
                     )
                 }
             }
